@@ -1,0 +1,44 @@
+# the version of Docker compose we're using
+version: "3.8"
+
+# Services is where we define the images that we want to create from our apps
+services:
+  # The first service that we will be creating is backend-flask
+  backend-flask:
+    # Setting environment variables
+    environment:
+      FRONTEND_URL: "http://localhost:3000"
+      BACKEND_URL: "http://localhost:4567"
+    # Specifying the location of the Dockerfile to build this service
+    build: ./backend-flask
+    # Specifying the ports that our container will be listening on at runtime
+    # and the port where we will be sending requests from
+    # Maps port 4567 on the host to port 4567 on the container
+    ports:
+      - "4567:4567"
+    # This line mounts the local backend-flask directory (on the host machine) into the
+    # /backend-flask directory inside the container. It establishes a link between the
+    # two directories, so any changes made to files in the backend-flask directory on
+    # the host machine will be immediately reflected inside the container, and vice versa
+    volumes:
+      - ./backend-flask:/backend-flask
+  frontend-react-js:
+    environment:
+      REACT_APP_BACKEND_URL: "http://localhost:4567"
+    build: ./frontend-react-js
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend-react-js:/frontend-react-js
+
+# By defining this in your Docker Compose file, you're essentially saying,
+# "I want a private network for my containers, I'll call it cruddur, and
+# it will act like a simple road for my containers to travel on."
+networks: 
+  internal-network:
+    driver: bridge
+    name: cruddur
+# placing your containers on this custom network, you're controlling how they
+# communicate with each other, ensuring they stay on their private road and can't
+# randomly chat with other containers outside of this network. It's like giving
+# your applications their own little playground to play safely in
