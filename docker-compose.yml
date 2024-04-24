@@ -9,6 +9,9 @@ services:
     environment:
       FRONTEND_URL: "http://localhost:3000"
       BACKEND_URL: "http://localhost:4567"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io"
+      OTEL_EXPORTER_OTLP_HEADERS: "x-honeycomb-team=${HONEYCOMB_API_KEY}"
+      OTEL_SERVICE_NAME: "backend-flask"
     # Specifying the location of the Dockerfile to build this service
     build: ./backend-flask
     # Specifying the ports that our container will be listening on at runtime
