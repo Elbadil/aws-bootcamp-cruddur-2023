@@ -31,6 +31,13 @@ import watchtower
 import logging
 from time import strftime
 
+# Rollbar -------
+import os
+import rollbar
+import rollbar.contrib.flask
+import rollbar.contrib.flask
+from rollbar.contrib.flask import report_exception
+from flask import got_request_exception
 
 # HoneyComb -----
 # Initialize tracing and an exporter that can send data to Honeycomb
@@ -51,6 +58,35 @@ app = Flask(__name__)
 # Initialize automatic instrumentation with Flask
 FlaskInstrumentor().instrument_app(app)
 RequestsInstrumentor().instrument()
+
+# Rollbar ----
+def init_rollbar(app):
+    rollbar_access_token = os.getenv('ROLLBAR_ACCESS_TOKEN')
+    flask_env = os.getenv('FLASK_ENV')
+    if rollbar_access_token:
+        rollbar.init(
+            # access token
+            rollbar_access_token,
+            # environment name
+            flask_env,
+            # server root directory, makes tracebacks prettier
+            root=os.path.dirname(os.path.realpath(__file__)),
+            # flask already sets up logging
+            allow_logging_basic_config=False
+        )
+        # send exceptions from `app` to Rollbar, using Flask's signal system.
+        got_request_exception.connect(report_exception, app)
+        return rollbar
+    else:
+        print("No Rollbar access token provided. Error tracking disabled.")
+        return None
+
+rollbar = init_rollbar(app)
+
+@app.route('/rollbar/test')
+def rollbar_test():
+    rollbar.report_message('Hello World!', 'warning')
+    return "Hello World!"
 
 # Configuring Logger to Use CloudWatch
 # LOGGER = logging.getLogger(__name__)

@@ -17,6 +17,8 @@ services:
       # AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
       # AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
       # AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+      # Rollbar ------
+      ROLLBAR_ACCESS_TOKEN: "${ROLLBAR_ACCESS_TOKEN}"
     # Specifying the location of the Dockerfile to build this service
     build: ./backend-flask
     # Specifying the ports that our container will be listening on at runtime
