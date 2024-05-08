@@ -9,16 +9,20 @@ services:
     environment:
       FRONTEND_URL: "http://localhost:3000"
       BACKEND_URL: "http://localhost:4567"
+
       # OpenTelemetry and HoneyComb to monitor and track requests data
       OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io"
       OTEL_EXPORTER_OTLP_HEADERS: "x-honeycomb-team=${HONEYCOMB_API_KEY}"
       OTEL_SERVICE_NAME: "backend-flask"
+
       # AWS Account Credentials
       # AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
       # AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
       # AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+  
       # Rollbar ------
-      ROLLBAR_ACCESS_TOKEN: "${ROLLBAR_ACCESS_TOKEN}"
+      # ROLLBAR_ACCESS_TOKEN: "${ROLLBAR_ACCESS_TOKEN}"
+
     # Specifying the location of the Dockerfile to build this service
     build: ./backend-flask
     # Specifying the ports that our container will be listening on at runtime
@@ -35,6 +39,11 @@ services:
   frontend-react-js:
     environment:
       REACT_APP_BACKEND_URL: "http://localhost:4567"
+      # Amazon Cognito Env Variables
+      REACT_APP_AWS_PROJECT_REGION: "${AWS_DEFAULT_REGION}"
+      REACT_APP_AWS_COGNITO_REGION: "${AWS_DEFAULT_REGION}"
+      REACT_APP_AWS_USER_POOLS_ID: "${AWS_USER_POOLS_ID}"
+      REACT_APP_AWS_USER_POOLS_WEB_CLIENT_ID: "${AWS_USER_POOLS_CLIENT_ID}"
     build: ./frontend-react-js
     ports:
       - "3000:3000"
