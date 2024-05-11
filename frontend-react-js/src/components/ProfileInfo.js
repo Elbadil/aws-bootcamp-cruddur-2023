@@ -26,6 +26,7 @@ export default function ProfileInfo(props) {
     // window.location.href = "/"
     try {
       await Auth.signOut({ global: true });
+      localStorage.removeItem("access_token")
       window.location.href = "/"
     } catch (error) {
         console.log('error signing out: ', error);
@@ -34,7 +35,7 @@ export default function ProfileInfo(props) {
 
   const classes = () => {
     let classes = ["profile-info-wrapper"];
-    if (popped == true){
+    if (popped === true){
       classes.push('popped');
     }
     return classes.join(' ');

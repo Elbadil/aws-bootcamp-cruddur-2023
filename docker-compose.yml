@@ -10,13 +10,20 @@ services:
       FRONTEND_URL: "http://localhost:3000"
       BACKEND_URL: "http://localhost:4567"
 
+      # to be able to see print statements
+      PYTHONUNBUFFERED: 1
+
       # OpenTelemetry and HoneyComb to monitor and track requests data
-      OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io"
-      OTEL_EXPORTER_OTLP_HEADERS: "x-honeycomb-team=${HONEYCOMB_API_KEY}"
-      OTEL_SERVICE_NAME: "backend-flask"
+      # OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io"
+      # OTEL_EXPORTER_OTLP_HEADERS: "x-honeycomb-team=${HONEYCOMB_API_KEY}"
+      # OTEL_SERVICE_NAME: "backend-flask"
+      
+      # Amazon Cognito Env Variables
+      AWS_COGNITO_USER_POOL_ID: "${AWS_USER_POOLS_ID}"
+      AWS_COGNITO_USER_POOL_CLIENT_ID: "${AWS_USER_POOLS_CLIENT_ID}"    
 
       # AWS Account Credentials
-      # AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
+      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
       # AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
       # AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
   

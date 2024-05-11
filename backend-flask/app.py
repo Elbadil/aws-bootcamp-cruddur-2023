@@ -2,6 +2,8 @@ from flask import Flask
 from flask import request
 from flask_cors import CORS, cross_origin
 import os
+# Flask AWS Cognito
+from lib.cognito_jwt_token import CognitoJwtToken, extract_access_token, TokenVerifyError
 
 from services.home_activities import *
 from services.notifications_activities import *
@@ -60,33 +62,33 @@ app = Flask(__name__)
 # RequestsInstrumentor().instrument()
 
 # Rollbar ----
-def init_rollbar(app):
-    rollbar_access_token = os.getenv('ROLLBAR_ACCESS_TOKEN')
-    flask_env = os.getenv('FLASK_ENV')
-    if rollbar_access_token:
-        rollbar.init(
-            # access token
-            rollbar_access_token,
-            # environment name
-            flask_env,
-            # server root directory, makes tracebacks prettier
-            root=os.path.dirname(os.path.realpath(__file__)),
-            # flask already sets up logging
-            allow_logging_basic_config=False
-        )
-        # send exceptions from `app` to Rollbar, using Flask's signal system.
-        got_request_exception.connect(report_exception, app)
-        return rollbar
-    else:
-        print("No Rollbar access token provided. Error tracking disabled.")
-        return None
+# def init_rollbar(app):
+#     rollbar_access_token = os.getenv('ROLLBAR_ACCESS_TOKEN')
+#     flask_env = os.getenv('FLASK_ENV')
+#     if rollbar_access_token:
+#         rollbar.init(
+#             # access token
+#             rollbar_access_token,
+#             # environment name
+#             flask_env,
+#             # server root directory, makes tracebacks prettier
+#             root=os.path.dirname(os.path.realpath(__file__)),
+#             # flask already sets up logging
+#             allow_logging_basic_config=False
+#         )
+#         # send exceptions from `app` to Rollbar, using Flask's signal system.
+#         got_request_exception.connect(report_exception, app)
+#         return rollbar
+#     else:
+#         print("No Rollbar access token provided. Error tracking disabled.")
+#         return None
 
-rollbar = init_rollbar(app)
+# rollbar = init_rollbar(app)
 
-@app.route('/rollbar/test')
-def rollbar_test():
-    rollbar.report_message('Hello World!', 'warning')
-    return "Hello World!"
+# @app.route('/rollbar/test')
+# def rollbar_test():
+#     rollbar.report_message('Hello World!', 'warning')
+#     return "Hello World!"
 
 # Configuring Logger to Use CloudWatch
 # LOGGER = logging.getLogger(__name__)
@@ -103,8 +105,10 @@ origins = [frontend, backend]
 cors = CORS(
   app, 
   resources={r"/api/*": {"origins": origins}},
-  expose_headers="location,link",
-  allow_headers="content-type,if-modified-since",
+  # expose_headers="location,link",
+  # allow_headers="content-type,if-modified-since",
+  headers=['Content-Type', 'Authorization'], 
+  expose_headers='Authorization',
   methods="OPTIONS,GET,HEAD,POST"
 )
 
@@ -113,6 +117,13 @@ cors = CORS(
 #   timestamp = strftime('[%Y-%b-%d %H:%M]')
 #   LOGGER.error('%s %s %s %s %s %s', timestamp, request.remote_addr, request.method, request.scheme, request.full_path, response.status)
 #   return response
+
+# Connecting to our Cognito User Pool using CognitoJwtToken from lib/cognito_jwt_token.py
+cognito_jwt_token = CognitoJwtToken(
+  user_pool_id=os.getenv("AWS_COGNITO_USER_POOL_ID"), 
+  user_pool_client_id=os.getenv("AWS_COGNITO_USER_POOL_CLIENT_ID"),
+  region=os.getenv("AWS_DEFAULT_REGION")
+)
 
 @app.route("/api/message_groups", methods=['GET'])
 def data_message_groups():
@@ -151,7 +162,19 @@ def data_create_message():
 
 @app.route("/api/activities/home", methods=['GET'])
 def data_home():
-  data = HomeActivities.run()
+  access_token = extract_access_token(request.headers)
+  try:
+    claims = cognito_jwt_token.verify(access_token)
+    # authenticated request
+    print("authenticated")
+    print(claims)
+    print(claims['username'])
+    data = HomeActivities.run(claims['username'])
+  except TokenVerifyError as e:
+    # unauthenticated request
+    print(e)
+    print("unauthenticated")
+    data = HomeActivities.run()
   return data, 200
 
 # Added notifications endpoint
