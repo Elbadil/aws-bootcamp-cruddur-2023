@@ -58,7 +58,9 @@ export default function SigninPage() {
   return (
     <article className="signin-article">
       <div className='signin-info'>
-        <Logo className='logo' />
+        <Link to="/">
+          <Logo className='logo'  />
+        </Link>
       </div>
       <div className='signin-wrapper'>
         <form 

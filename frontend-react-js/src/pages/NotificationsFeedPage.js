@@ -25,6 +25,7 @@ export default function NotificationsFeedPage() {
         method: "GET"
       });
       let resJson = await res.json();
+      console.log(resJson);
       if (res.status === 200) {
         setActivities(resJson)
       } else {

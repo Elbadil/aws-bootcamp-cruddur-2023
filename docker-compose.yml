@@ -7,11 +7,16 @@ services:
   backend-flask:
     # Setting environment variables
     environment:
+      DB_CONNECTION_URL: "${DB_CONNECTION_URL}"
       FRONTEND_URL: "http://localhost:3000"
       BACKEND_URL: "http://localhost:4567"
 
       # to be able to see print statements
       PYTHONUNBUFFERED: 1
+
+      # Flask Dev Env
+      FLASK_ENV: "development"
+      FLASK_DEBUG: 1
 
       # OpenTelemetry and HoneyComb to monitor and track requests data
       # OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io"
@@ -43,6 +48,7 @@ services:
     # the host machine will be immediately reflected inside the container, and vice versa
     volumes:
       - ./backend-flask:/backend-flask
+
   frontend-react-js:
     environment:
       REACT_APP_BACKEND_URL: "http://localhost:4567"
@@ -56,6 +62,30 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend-react-js:/frontend-react-js
+
+  # dynamodb-local:
+  #   # https://stackoverflow.com/questions/67533058/persist-local-dynamodb-data-in-volumes-lack-permission-unable-to-open-databa
+  #   # We needed to add user:root to get this working.
+  #   user: root
+  #   command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+  #   image: "amazon/dynamodb-local:latest"
+  #   container_name: dynamodb-local
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - "./docker/dynamodb:/home/dynamodblocal/data"
+  #   working_dir: /home/dynamodblocal
+
+  db:
+    image: postgres:13-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - '5432:5432'
+    volumes: 
+      - db:/var/lib/postgresql/data
 
 # By defining this in your Docker Compose file, you're essentially saying,
 # "I want a private network for my containers, I'll call it cruddur, and

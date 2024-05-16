@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask import request
 from flask_cors import CORS, cross_origin
 import os
@@ -119,11 +119,11 @@ cors = CORS(
 #   return response
 
 # Connecting to our Cognito User Pool using CognitoJwtToken from lib/cognito_jwt_token.py
-cognito_jwt_token = CognitoJwtToken(
-  user_pool_id=os.getenv("AWS_COGNITO_USER_POOL_ID"), 
-  user_pool_client_id=os.getenv("AWS_COGNITO_USER_POOL_CLIENT_ID"),
-  region=os.getenv("AWS_DEFAULT_REGION")
-)
+# cognito_jwt_token = CognitoJwtToken(
+#   user_pool_id=os.getenv("AWS_COGNITO_USER_POOL_ID"), 
+#   user_pool_client_id=os.getenv("AWS_COGNITO_USER_POOL_CLIENT_ID"),
+#   region=os.getenv("AWS_DEFAULT_REGION")
+# )
 
 @app.route("/api/message_groups", methods=['GET'])
 def data_message_groups():
@@ -162,19 +162,19 @@ def data_create_message():
 
 @app.route("/api/activities/home", methods=['GET'])
 def data_home():
-  access_token = extract_access_token(request.headers)
-  try:
-    claims = cognito_jwt_token.verify(access_token)
-    # authenticated request
-    print("authenticated")
-    print(claims)
-    print(claims['username'])
-    data = HomeActivities.run(claims['username'])
-  except TokenVerifyError as e:
-    # unauthenticated request
-    print(e)
-    print("unauthenticated")
-    data = HomeActivities.run()
+  # access_token = extract_access_token(request.headers)
+  # try:
+  #   claims = cognito_jwt_token.verify(access_token)
+  #   # authenticated request
+  #   print("authenticated")
+  #   print(claims)
+  #   print(claims['username'])
+  #   data = HomeActivities.run(claims['username'])
+  # except TokenVerifyError as e:
+  #   # unauthenticated request
+  #   print(e)
+  #   print("unauthenticated")
+  data = HomeActivities.run()
   return data, 200
 
 # Added notifications endpoint

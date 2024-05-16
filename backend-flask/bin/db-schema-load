@@ -1,0 +1,22 @@
+#!/usr/bin/bash
+
+# SCHEMA_FILE_PATH=$(realpath ./db/schema.sql)
+# echo $SCHEMA_FILE_PATH
+
+# Adding Some Coloring
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+
+if [ "$1" = 'prod' ]; then
+    printf "${CYAN}== Running in production mode => Creating Tables ==${NO_COLOR}\n"
+    CON_URL=$AWS_DB_CONNECTION_URL
+else
+    printf "${CYAN}== Running in development mode => Creating Tables ==${NO_COLOR}\n"
+    CON_URL=$DB_CONNECTION_URL
+fi
+
+SCHEMA_FILE_PATH=$(realpath ./db/schema.sql)
+# echo $SCHEMA_FILE_PATH
+
+# Running the postgresql commands from the schema.sql inside our cruddur db
+psql $CON_URL cruddur < $SCHEMA_FILE_PATH

@@ -1,0 +1,15 @@
+#!/usr/bin/bash
+
+# Adding Some Coloring
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+
+if [ "$1" = 'prod' ]; then
+    printf "${CYAN}== Running in production mode => Connecting to Cruddur DB From AWS PG-DB Server ==${NO_COLOR}\n"
+    CON_URL=$AWS_DB_CONNECTION_URL
+else
+    printf "${CYAN}== Running in development mode => Connecting To Cruddur DB From Localhost PG Server ==${NO_COLOR}\n"
+    CON_URL=$DB_CONNECTION_URL
+fi
+
+psql $CON_URL

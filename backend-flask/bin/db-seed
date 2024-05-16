@@ -1,0 +1,19 @@
+#!/usr/bin/bash
+
+# Adding Some Coloring
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+
+if [ "$1" = 'prod' ]; then
+    printf "${CYAN}== Running in production mode => Inserting Data ==${NO_COLOR}\n"
+    CON_URL=$AWS_DB_CONNECTION_URL
+else
+    printf "${CYAN}== Running in development mode => Inserting Data ==${NO_COLOR}\n"
+    CON_URL=$DB_CONNECTION_URL
+fi
+
+SEED_FILE_PATH=$(realpath ./db/seed.sql)
+# echo $SEED_FILE_PATH
+
+# Running the postgresql commands from the seed.sql inside our cruddur db
+psql $CON_URL cruddur < $SEED_FILE_PATH

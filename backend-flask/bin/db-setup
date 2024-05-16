@@ -1,0 +1,15 @@
+#!/usr/bin/bash
+
+-e # stop if it fails at any point
+
+# Adding Some Coloring
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+
+# Info message
+printf "${CYAN}===== Setting up 'cruddur' database =====${NO_COLOR}\n"
+
+# ./bin/db-drop
+# ./bin/db-create
+./bin/db-schema-load
+./bin/db-seed
