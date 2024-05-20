@@ -11,6 +11,7 @@ import psycopg
 
 connection_url = os.getenv('DB_SG_ID')
 print(connection_url)
+print(psycopg.version)
 
 # with psycopg.connect("host=localhost dbname=cruddur user=postgres password=password") as conn:
 #     with conn.cursor() as cur:

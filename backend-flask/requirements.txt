@@ -26,3 +26,4 @@ Flask-AWSCognito
 psycopg[binary]
 psycopg[pool]
 psycopg_pool
+psycopg2-binary
