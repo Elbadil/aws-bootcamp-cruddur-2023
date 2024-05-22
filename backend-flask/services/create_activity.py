@@ -1,51 +1,57 @@
-import uuid
 from datetime import datetime, timedelta, timezone
+from lib.db import db
+
+
 class CreateActivity:
-  def run(message, user_handle, ttl):
-    model = {
-      'errors': None,
-      'data': None
-    }
+    """Create Activity Manager"""
+    def create_activity(handle, message, expires_at):
+        """Creates and inserts activity data in the db
+        and returns the activity's uuid"""
+        query = db.sql_template('activities', 'create')
+        try:
+            activity_uuid = db.execute_query_return_uuid(query, handle, message, expires_at)
+            return activity_uuid
+        except Exception as e:
+            print(e)
+            return "failed"
 
-    now = datetime.now(timezone.utc).astimezone()
+    def run(user_handle, message, ttl):
+        """Runs the create_activity method and
+        returns activity's data as an object"""
+        model = {
+            'errors': None,
+            'data': None
+        }
 
-    if (ttl == '30-days'):
-      ttl_offset = timedelta(days=30) 
-    elif (ttl == '7-days'):
-      ttl_offset = timedelta(days=7) 
-    elif (ttl == '3-days'):
-      ttl_offset = timedelta(days=3) 
-    elif (ttl == '1-day'):
-      ttl_offset = timedelta(days=1) 
-    elif (ttl == '12-hours'):
-      ttl_offset = timedelta(hours=12) 
-    elif (ttl == '3-hours'):
-      ttl_offset = timedelta(hours=3) 
-    elif (ttl == '1-hour'):
-      ttl_offset = timedelta(hours=1) 
-    else:
-      model['errors'] = ['ttl_blank']
+        now = datetime.now(timezone.utc).astimezone()
+        period = None
 
-    if user_handle == None or len(user_handle) < 1:
-      model['errors'] = ['user_handle_blank']
+        if ttl is None:
+            model['errors'] = ['ttl_blank']
+        elif 'day' in ttl:
+            period = ttl.split('-')[0]
+            ttl_offset = timedelta(days=int(period))
+        elif 'hour' in ttl:
+            period = ttl.split('-')[0]
+            ttl_offset = timedelta(hours=int(period))
 
-    if message == None or len(message) < 1:
-      model['errors'] = ['message_blank'] 
-    elif len(message) > 280:
-      model['errors'] = ['message_exceed_max_chars'] 
+        if user_handle == None or len(user_handle) < 1:
+            model['errors'] = ['user_handle_blank']
 
-    if model['errors']:
-      model['data'] = {
-        'handle':  user_handle,
-        'message': message
-      }   
-    else:
-      model['data'] = {
-        'uuid': uuid.uuid4(),
-        'display_name': 'Andrew Brown',
-        'handle':  user_handle,
-        'message': message,
-        'created_at': now.isoformat(),
-        'expires_at': (now + ttl_offset).isoformat()
-      }
-    return model
+        if message == None or len(message) < 1:
+            model['errors'] = ['message_blank'] 
+        elif len(message) > 280:
+            model['errors'] = ['message_exceed_max_chars'] 
+
+        if model['errors']:
+            model['data'] = {
+                'handle': user_handle,
+                'message': message
+            }
+        else:
+            expires_at = (now + ttl_offset)
+            activity_uuid = CreateActivity.create_activity(user_handle, message, expires_at)
+            activity_query = db.sql_template('activities', 'object')
+            activity_data = db.query_wrap_object_json(activity_query, activity_uuid)
+            model['data'] = activity_data
+        return model

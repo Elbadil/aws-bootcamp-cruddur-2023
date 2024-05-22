@@ -23,13 +23,15 @@ export default function ActivityForm(props) {
         method: "POST",
         headers: {
           'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          handle: 'elbadil',
           message: message,
           ttl: ttl
         }),
       });
+      console.log(ttl, message);
       let data = await res.json();
       if (res.status === 200) {
         // add activity to the feed

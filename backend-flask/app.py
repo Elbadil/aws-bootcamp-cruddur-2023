@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 from flask import request
 from flask_cors import CORS, cross_origin
 import os
+from datetime import datetime, timedelta
 # Flask AWS Cognito
 from lib.cognito_jwt_token import CognitoJwtToken, extract_access_token, TokenVerifyError
 
@@ -205,15 +206,13 @@ def data_search():
 @app.route("/api/activities", methods=['POST','OPTIONS'])
 @cross_origin()
 def data_activities():
-  user_handle  = 'andrewbrown'
-  message = request.json['message']
-  ttl = request.json['ttl']
-  model = CreateActivity.run(message, user_handle, ttl)
-  if model['errors'] is not None:
-    return model['errors'], 422
-  else:
-    return model['data'], 200
-  return
+    handle = request.json.get('handle')
+    message = request.json.get('message')
+    expires_at = request.json.get('ttl')
+    user_activity = CreateActivity.run(handle, message, expires_at)
+    if user_activity['errors'] is not None:
+        return user_activity['errors'], 422
+    return user_activity['data'], 200
 
 @app.route("/api/activities/<string:activity_uuid>", methods=['GET'])
 def data_show_activity(activity_uuid):
