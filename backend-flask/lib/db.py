@@ -1,8 +1,11 @@
 from psycopg_pool import ConnectionPool
 import psycopg
 import os
+import sys
 
-from flask import current_app as app
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+
+# from flask import current_app as app
 
 
 class DB:
@@ -64,6 +67,8 @@ class DB:
     @staticmethod
     def sql_template(*file_path):
         """Reads from an sql template and returns the query"""
+        from app import app
+
         # Creating a tuple with all sql file's parent folders
         # And adding the file's path args to the tuple
         pathing = (app.root_path, 'db', 'sql',) + file_path
@@ -83,16 +88,16 @@ class DB:
         """Adds Json specifications to return the object
         query results in JSON Format"""
         query_json = f'''
-        (SELECT COALESCE(row_to_json(object_row),'[]'::json) FROM (
-        {template}
-        ) object_row);
+            (SELECT COALESCE(row_to_json(object_row),'[]'::json) FROM (
+            {template}
+            ) object_row);
         '''
         try:
             with self.pool.connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute(query_json, args)
                     results = cur.fetchone()
-                    # print(results)
+                    # print(results[0])
                     return results[0]
         except (Exception, psycopg.DatabaseError) as error:
             print(f"Error fetching object data: {error}")

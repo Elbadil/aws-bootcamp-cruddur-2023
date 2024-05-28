@@ -12,7 +12,7 @@ opentelemetry-instrumentation-requests
 # AWS X-Ray
 aws-xray-sdk
 
-# CloudWatch
+# CloudWatch logging
 watchtower
 
 # Rollbar
@@ -27,3 +27,6 @@ psycopg[binary]
 psycopg[pool]
 psycopg_pool
 psycopg2-binary
+
+# AWS SDK for Python to create, configure and manage AWS Services
+boto3

@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from lib.db import db
 
 
 class CreateActivity:
@@ -7,6 +6,8 @@ class CreateActivity:
     def create_activity(handle, message, expires_at):
         """Creates and inserts activity data in the db
         and returns the activity's uuid"""
+        from lib.db import db
+
         query = db.sql_template('activities', 'create')
         try:
             activity_uuid = db.execute_query_return_uuid(query, handle, message, expires_at)
@@ -18,6 +19,8 @@ class CreateActivity:
     def run(user_handle, message, ttl):
         """Runs the create_activity method and
         returns activity's data as an object"""
+        from lib.db import db
+
         model = {
             'errors': None,
             'data': None

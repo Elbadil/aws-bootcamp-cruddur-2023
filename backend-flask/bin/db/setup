@@ -9,7 +9,7 @@ NO_COLOR='\033[0m'
 # Info message
 printf "${CYAN}===== Setting up 'cruddur' database =====${NO_COLOR}\n"
 
-# ./bin/db-drop
-# ./bin/db-create
-./bin/db-schema-load
-./bin/db-seed
+# ./bin/db/drop
+# ./bin/db/create
+./bin/db/schema-load
+./bin/db/seed
