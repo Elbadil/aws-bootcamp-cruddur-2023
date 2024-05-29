@@ -76,11 +76,13 @@ class DB:
         file_full_path = os.path.join(*pathing)
         # Adding sql file's extension
         file_full_path += '.sql'
-        print_with_coloring(f'Loading SQL Template {file_full_path}')
+        delimiter = "/" if "/" in file_full_path else "\\"
+        display_path = file_full_path.split(delimiter)
+        print_with_coloring(f'Loading SQL Template {delimiter.join(display_path[4:])}')
         try:
             with open(file_full_path, "r") as sql_file:
-                    query = sql_file.read()
-                    return query
+                query = sql_file.read()
+                return query
         except Exception as e:
             print(f'Error getting template: {e}')
 

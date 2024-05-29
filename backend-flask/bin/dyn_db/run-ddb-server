@@ -1,0 +1,10 @@
+#!/usr/bin/bash
+
+# Defining the command to run DynamoDB Local
+RUN_DYNAMODB_LOCAL="java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -sharedDb"
+
+# Navigating to the home directory where we have DynamoDB dependencies
+cd ~
+
+# Creating a new tmux session named 'dynamodb' with the predefined command
+tmux new-session -d -s dynamodb $RUN_DYNAMODB_LOCAL

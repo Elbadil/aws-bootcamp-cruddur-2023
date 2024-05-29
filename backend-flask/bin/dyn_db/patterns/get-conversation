@@ -3,6 +3,7 @@
 import boto3
 import sys
 import json
+from datetime import datetime
 
 
 attrs = {
@@ -13,12 +14,50 @@ if len(sys.argv) == 2 and "prod" in sys.argv[1]:
     attrs = {}
 
 # Client: Connecting to our DynamoDB Local server
-ddb_resource = boto3.client('dynamodb', **attrs)
+ddb_client = boto3.client('dynamodb', **attrs)
 
 # message_group_uuid of the conversation
 message_group_uuid = "5ae290ed-55d1-47a0-bc6d-fe2bc2700399"
 
-params = {
+start_time = '2024-05-28T21:14:00'
+end_time = '2024-05-28T21:16:59'
+
+query_params = {
     'TableName': 'cruddur_messages',
+    # Indicating that we want to query with the partition key as pkey(primary key)
+    'KeyConditionExpression': 'pk = :pk AND sk BETWEEN :startTime AND :endTime',
+    # If set to False, the results are returned in descending order
+    # The sorting is based on the sort key even thought it's not defined
+    # in the KeyConditionExpression
+    'ScanIndexForward': True,
+    'Limit': 20,
+    # Defining the value of partition key of the
+    # records that we want to retrieve from the table
+    'ExpressionAttributeValues': {
+        ':pk': {'S': f"MSG-{message_group_uuid}"},
+        ':startTime': {'S': start_time},
+        ':endTime': {'S': end_time},
+    },
+    # to include the total consumed capacity for the operation in the response.
+    'ReturnConsumedCapacity': 'TOTAL'
 }
 
+# Executing the query
+response = ddb_client.query(**query_params)
+
+# print the items returned by the query
+# print(json.dumps(response, sort_keys=True, indent=2))
+
+# print the consumed capacity
+print(json.dumps(response['ConsumedCapacity'], sort_keys=True, indent=2))
+
+# Extracting items from the query response dictionary
+items = response['Items']
+
+for item in items:
+    sender_handle = item['user_handle']['S']
+    message = item['message']['S']
+    timestamp = item['sk']['S']
+    dt_object = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S.%f%z')
+    formatted_datetime = dt_object.strftime('%Y-%m-%d %I:%M %p')
+    print(f'{sender_handle: <16}{formatted_datetime: <22}{message[:40]}...')
