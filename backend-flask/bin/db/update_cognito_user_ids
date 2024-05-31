@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+
+import boto3
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+
+from lib.db import db
+
+
+def get_cognito_ids(user_pool):
+    """Returns user_ids dictionary from cognito user_pool"""
+    cg_client = boto3.client('cognito-idp')
+    params = {
+        'UserPoolId': user_pool,
+        'AttributesToGet': [
+            'sub',
+            'preferred_username'
+        ],
+        'Limit': 10
+    }
+    response = cg_client.list_users(**params)
+    # Extracting users from our cognito cruddur-user-pool
+    cg_users = response['Users']
+    cg_users_dict = {}
+    for user in cg_users:
+        user_attrs = user['Attributes']
+        user_sub = next((a['Value'] for a in user_attrs if a['Name'] == 'sub'), None)
+        user_handle = next((a['Value'] for a in user_attrs if a['Name'] == 'preferred_username'), None)
+        cg_users_dict[user_handle] = user_sub
+    print(cg_users_dict)
+    return cg_users_dict
+
+
+def get_db_users():
+    """Returns user objects from our database"""
+    db_users_query = db.sql_template('users', 'list_users')
+    db_users = db.query_wrap_list_json(db_users_query)
+    print(db_users)
+    return db_users
+
+
+# Cruddur User Pool
+cruddur_user_pool_id = os.getenv('AWS_USER_POOLS_ID')
+
+# Extracting user_ids from cruddur_user_pool
+cg_users = get_cognito_ids(cruddur_user_pool_id)
+
+# Extracting user objects from cruddur users table
+db_users = get_db_users()
+
+# Updating db_users with the correct cognito_id
+for user in db_users:
+    if user['handle'] in cg_users:
+        query = db.sql_template('users', 'update_user_cognito_id')
+        query_params = {
+            'cognito_id': cg_users[user['handle']],
+            'handle': user['handle']
+        }
+        db.execute_query(query, **query_params)

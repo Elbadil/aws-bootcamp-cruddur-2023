@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+
+import boto3
+import os
+
+
+cg_client = boto3.client('cognito-idp')
+
+response = cg_client.list_users(
+    UserPoolId=os.getenv('AWS_USER_POOLS_ID'),
+    AttributesToGet=[
+        'sub',
+        'preferred_username',
+        'name'
+    ],
+    Limit=20
+)
+
+users = response['Users']
+
+for user in users:
+    print(user)
+    print('------')

@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, abort
 from flask import request
 from flask_cors import CORS, cross_origin
 import os
@@ -120,27 +120,38 @@ cors = CORS(
 #   return response
 
 # Connecting to our Cognito User Pool using CognitoJwtToken from lib/cognito_jwt_token.py
-# cognito_jwt_token = CognitoJwtToken(
-#   user_pool_id=os.getenv("AWS_COGNITO_USER_POOL_ID"), 
-#   user_pool_client_id=os.getenv("AWS_COGNITO_USER_POOL_CLIENT_ID"),
-#   region=os.getenv("AWS_DEFAULT_REGION")
-# )
+cognito_jwt_token = CognitoJwtToken(
+  user_pool_id=os.getenv("AWS_USER_POOLS_ID"), 
+  user_pool_client_id=os.getenv("AWS_USER_POOLS_CLIENT_ID"),
+  region=os.getenv("AWS_DEFAULT_REGION")
+)
 
 @app.route("/api/message_groups", methods=['GET'])
 def data_message_groups():
-  user_handle  = 'andrewbrown'
-  model = MessageGroups.run(user_handle=user_handle)
-  if model['errors'] is not None:
-    return model['errors'], 422
-  else:
-    return model['data'], 200
+    access_token = extract_access_token(request.headers)
+    try:
+        claims = cognito_jwt_token.verify(access_token)
+        # authenticated request
+        print("authenticated")
+        # print(claims)
+        # print(claims['sub'])
+        cognito_user_id = claims['sub']
+        model = MessageGroups.run(cognito_user_id=cognito_user_id)
+        if model['errors'] is not None:
+            return model['errors'], 422
+        else:
+            return model['data'], 200
+    except TokenVerifyError as e:
+        # unauthenticated request
+        print(e)
+        print("unauthenticated")
+        abort(401)
 
-@app.route("/api/messages/@<string:handle>", methods=['GET'])
-def data_messages(handle):
-  user_sender_handle = 'andrewbrown'
-  user_receiver_handle = request.args.get('user_receiver_handle')
-
-  model = Messages.run(user_sender_handle=user_sender_handle, user_receiver_handle=user_receiver_handle)
+@app.route("/api/messages/<string:message_group_uuid>", methods=['GET'])
+def data_messages(message_group_uuid):
+  # user_sender_handle = 'andrewbrown'
+  # user_receiver_handle = request.args.get('user_receiver_handle')
+  model = Messages.run(message_group_uuid=message_group_uuid)
   if model['errors'] is not None:
     return model['errors'], 422
   else:

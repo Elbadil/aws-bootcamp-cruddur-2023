@@ -30,7 +30,8 @@ class DB:
             print('---Database connection closed---')
 
     def execute_query_return_uuid(self, query, *args):
-        """performs a query and commits changes to the database"""
+        """performs a query, commits changes to the database
+        and returns the object's uuid"""
         query_return_uuid = f'{query} RETURNING uuid;'
         try:
             with self.pool.connection() as conn:
@@ -39,6 +40,16 @@ class DB:
                     query_uuid = cur.fetchone()[0]
                     conn.commit()
                     return query_uuid
+        except (Exception, psycopg.DatabaseError) as error:
+            print(f"Error executing query: {error}")
+
+    def execute_query(self, query, **kwargs):
+        """performs a query and commits changes to the database"""
+        try:
+            with self.pool.connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(query, kwargs)
+                    conn.commit()
         except (Exception, psycopg.DatabaseError) as error:
             print(f"Error executing query: {error}")
 

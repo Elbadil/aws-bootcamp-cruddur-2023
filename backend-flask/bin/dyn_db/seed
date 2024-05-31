@@ -4,6 +4,7 @@ import boto3
 import sys
 import os
 from datetime import datetime, timezone, timedelta
+import uuid
 
 # Joining the path of our file with backend app path
 # so we can append it to the sys.path
@@ -80,7 +81,7 @@ def create_message(table,
     record = {
         'pk': f'MSG-{message_group_uuid}',
         'sk': created_at,
-        'message_group_uuid': message_group_uuid,
+        'message_uuid': str(uuid.uuid4()),
         'message': message,
         'user_uuid': user_uuid,
         'user_display_name': user_display_name,

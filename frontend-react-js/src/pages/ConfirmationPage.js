@@ -72,7 +72,6 @@ export default function ConfirmationPage() {
     if (params.email) {
       setEmail(params.email)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

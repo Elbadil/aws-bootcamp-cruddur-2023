@@ -31,18 +31,18 @@ export default function MessageGroupItem(props) {
   }
 
   return (
-    <Link className={classes()} to={`/messages/@`+props.message_group.handle}>
+    <Link className={classes()} to={`/messages/`+props.message_group.uuid}>
       <div className='message_group_avatar'></div>
       <div className='message_content'>
         <div classsName='message_group_meta'>
           <div className='message_group_identity'>
-            <div className='display_name'>{props.message_group.display_name}</div>
-            <div className="handle">@{props.message_group.handle}</div>
+            <div className='display_name'>{props.message_group.other_user_display_name}</div>
+            <div className="handle">@{props.message_group.other_user_handle}</div>
           </div>{/* activity_identity */}
         </div>{/* message_meta */}
-        <div className="message">{props.message_group.message}</div>
-        <div className="created_at" title={props.message_group.created_at}>
-          <span className='ago'>{format_time_created_at(props.message_group.created_at)}</span> 
+        <div className="message">{props.message_group.last_message}</div>
+        <div className="created_at" title={props.message_group.last_message_at}>
+          <span className='ago'>{format_time_created_at(props.message_group.last_message_at)}</span> 
         </div>{/* created_at */}
       </div>{/* message_content */}
     </Link>

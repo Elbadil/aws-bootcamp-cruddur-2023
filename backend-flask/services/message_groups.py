@@ -1,24 +1,22 @@
 from datetime import datetime, timedelta, timezone
-class MessageGroups:
-  def run(user_handle):
-    model = {
-      'errors': None,
-      'data': None
-    }
+from lib.ddb import ddb
+from lib.db import db
 
-    now = datetime.now(timezone.utc).astimezone()
-    results = [
-      {
-        'uuid': '24b95582-9e7b-4e0a-9ad1-639773ab7552',
-        'display_name': 'Andrew Brown',
-        'handle':  'andrewbrown',
-        'created_at': now.isoformat()
-      },
-      {
-        'uuid': '417c360e-c4e6-4fce-873b-d2d71469b4ac',
-        'display_name': 'Worf',
-        'handle':  'worf',
-        'created_at': now.isoformat()
-    }]
-    model['data'] = results
-    return model
+
+class MessageGroups:
+    """Message Groups Manager"""
+    def run(cognito_user_id: str):
+        """returns a list of message groups objects"""
+        model = {
+        'errors': None,
+        'data': None
+        }
+        now = datetime.now(timezone.utc).astimezone()
+        # Extracting user's uuid
+        query_user = db.sql_template('users', 'user_by_cognito_id')
+        user_uuid = db.query_wrap_object_json(query_user, cognito_user_id)['uuid']
+
+        # Extracting the list of message groups of the user
+        results = ddb.list_message_groups(user_uuid)
+        model['data'] = results
+        return model
