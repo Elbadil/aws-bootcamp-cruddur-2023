@@ -29,14 +29,14 @@ class DB:
             self.pool.close()
             print('---Database connection closed---')
 
-    def execute_query_return_uuid(self, query, *args):
+    def execute_query_return_uuid(self, query, **kwargs):
         """performs a query, commits changes to the database
         and returns the object's uuid"""
         query_return_uuid = f'{query} RETURNING uuid;'
         try:
             with self.pool.connection() as conn:
                 with conn.cursor() as cur:
-                    cur.execute(query_return_uuid, args)
+                    cur.execute(query_return_uuid, kwargs)
                     query_uuid = cur.fetchone()[0]
                     conn.commit()
                     return query_uuid

@@ -24,9 +24,9 @@ export default function ActivityForm(props) {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem("access_token")}`
         },
         body: JSON.stringify({
-          handle: 'elbadil',
           message: message,
           ttl: ttl
         }),

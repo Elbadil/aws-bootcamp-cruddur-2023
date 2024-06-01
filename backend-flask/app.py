@@ -16,6 +16,7 @@ from services.message_groups import *
 from services.messages import *
 from services.create_message import *
 from services.show_activity import *
+from services.users_short import *
 
 # HoneyComb -----
 from opentelemetry import trace
@@ -126,9 +127,10 @@ cognito_jwt_token = CognitoJwtToken(
   region=os.getenv("AWS_DEFAULT_REGION")
 )
 
-@app.route("/api/message_groups", methods=['GET'])
-def data_message_groups():
-    access_token = extract_access_token(request.headers)
+def cognito_user_id(request_headers):
+    """Verifies access token and returns the request user's
+    cognito_id"""
+    access_token = extract_access_token(request_headers)
     try:
         claims = cognito_jwt_token.verify(access_token)
         # authenticated request
@@ -136,58 +138,65 @@ def data_message_groups():
         # print(claims)
         # print(claims['sub'])
         cognito_user_id = claims['sub']
-        model = MessageGroups.run(cognito_user_id=cognito_user_id)
-        if model['errors'] is not None:
-            return model['errors'], 422
-        else:
-            return model['data'], 200
+        return cognito_user_id
     except TokenVerifyError as e:
         # unauthenticated request
         print(e)
         print("unauthenticated")
         abort(401)
 
+@app.route("/api/message_groups", methods=['GET'])
+def data_message_groups():
+    user_sub = cognito_user_id(request.headers)
+    model = MessageGroups.run(cognito_user_id=user_sub)
+    if model['errors'] is not None:
+        return model['errors'], 422
+    else:
+        return model['data'], 200
+
 @app.route("/api/messages/<string:message_group_uuid>", methods=['GET'])
 def data_messages(message_group_uuid):
-  # user_sender_handle = 'andrewbrown'
-  # user_receiver_handle = request.args.get('user_receiver_handle')
-  model = Messages.run(message_group_uuid=message_group_uuid)
-  if model['errors'] is not None:
-    return model['errors'], 422
-  else:
-    return model['data'], 200
-  return
+    # user_sub = cognito_user_id(request.headers)
+    model = Messages.run(
+    #    cognito_user_id=user_sub,
+       message_group_uuid=message_group_uuid
+    )
+    if model['errors'] is not None:
+        return model['errors'], 422
+    else:
+        return model['data'], 200
 
 @app.route("/api/messages", methods=['POST','OPTIONS'])
 @cross_origin()
 def data_create_message():
-  user_sender_handle = 'andrewbrown'
-  user_receiver_handle = request.json['user_receiver_handle']
-  message = request.json['message']
-
-  model = CreateMessage.run(message=message,user_sender_handle=user_sender_handle,user_receiver_handle=user_receiver_handle)
-  if model['errors'] is not None:
-    return model['errors'], 422
-  else:
-    return model['data'], 200
-  return
+    user_sub = cognito_user_id(request.headers)
+    message = request.json['message']
+    message_group_uuid = request.json.get('message_group_uuid', None)
+    if message_group_uuid is None:
+       user_receiver_handle = request.json['handle']
+    model = CreateMessage.run(message=message,
+                                cognito_user_id=user_sub,
+                                message_group_uuid=message_group_uuid,
+                                user_receiver_handle=user_receiver_handle)
+    if model['errors'] is not None:
+        return model['errors'], 422
+    else:
+        return model['data'], 200
 
 @app.route("/api/activities/home", methods=['GET'])
 def data_home():
-  # access_token = extract_access_token(request.headers)
-  # try:
-  #   claims = cognito_jwt_token.verify(access_token)
-  #   # authenticated request
-  #   print("authenticated")
-  #   print(claims)
-  #   print(claims['username'])
-  #   data = HomeActivities.run(claims['username'])
-  # except TokenVerifyError as e:
-  #   # unauthenticated request
-  #   print(e)
-  #   print("unauthenticated")
-  data = HomeActivities.run()
-  return data, 200
+    # user_sub = cognito_user_id(request.headers)
+    data = HomeActivities.run()
+    return data, 200
+
+@app.route('/api/users/@<string:handle>/short', methods=['GET'])
+def data_user(handle):
+    """"""
+    model = UserShort.run(handle)
+    if model['errors'] is not None:
+        return model['errors'], 422
+    else:
+        return model['data'], 200
 
 # Added notifications endpoint
 @app.route("/api/activities/notifications", methods=['GET'])
@@ -212,15 +221,15 @@ def data_search():
     return model['errors'], 422
   else:
     return model['data'], 200
-  return
+
 
 @app.route("/api/activities", methods=['POST','OPTIONS'])
 @cross_origin()
 def data_activities():
-    handle = request.json.get('handle')
+    user_sub = cognito_user_id(request.headers)
     message = request.json.get('message')
     expires_at = request.json.get('ttl')
-    user_activity = CreateActivity.run(handle, message, expires_at)
+    user_activity = CreateActivity.run(user_sub, message, expires_at)
     if user_activity['errors'] is not None:
         return user_activity['errors'], 422
     return user_activity['data'], 200
@@ -240,7 +249,7 @@ def data_activities_reply(activity_uuid):
     return model['errors'], 422
   else:
     return model['data'], 200
-  return
+
 
 if __name__ == "__main__":
   app.run(debug=True)
