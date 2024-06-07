@@ -145,6 +145,13 @@ def cognito_user_id(request_headers):
         print("unauthenticated")
         abort(401)
 
+
+@app.route('/api/health-check', methods=['GET'])
+def health_check():
+    """"""
+    return {'success': True}, 200
+
+
 @app.route("/api/message_groups", methods=['GET'])
 def data_message_groups():
     user_sub = cognito_user_id(request.headers)
@@ -172,6 +179,7 @@ def data_create_message():
     user_sub = cognito_user_id(request.headers)
     message = request.json['message']
     message_group_uuid = request.json.get('message_group_uuid', None)
+    user_receiver_handle=None
     if message_group_uuid is None:
        user_receiver_handle = request.json['handle']
     model = CreateMessage.run(message=message,

@@ -1,4 +1,4 @@
-FROM python:3.10-slim-buster
+FROM ${AWS_ACCOUNT_ID}.dkr.ecr.ca-central-1.amazonaws.com/cruddur-python:3.10-slim-buster
 
 # Setting the working directory inside the container to /backend-flask
 # All subsequent commands will be executed relative to this directory
@@ -19,6 +19,7 @@ COPY . .
 # This is typically used to configure Flask to run in development mode
 # which provides more detailed error messages and enables debugging features.
 ENV FLASK_ENV=development
+ENV FLASK_DEBUG=1
 
 # Setting the port that our container will be listening on at runtime
 # EXPOSE 4567

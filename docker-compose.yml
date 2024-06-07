@@ -1,5 +1,5 @@
 # the version of Docker compose we're using
-version: "3.8"
+# version: "3.8"
 
 # Services is where we define the images that we want to create from our apps
 services:
@@ -7,15 +7,16 @@ services:
   backend-flask:
     # Setting environment variables
     environment:
-      DB_CONNECTION_URL: "${DB_CONNECTION_URL}"
+      DB_CONNECTION_URL: "postgresql://postgres:password@db:5432/cruddur"
       FRONTEND_URL: "http://localhost:3000"
       BACKEND_URL: "http://localhost:4567"
+      MY_IP: "${MY_IP}"
 
       # to be able to see print statements
       PYTHONUNBUFFERED: 1
 
-      # Flask Dev Env
-      FLASK_ENV: "development"
+      # Flask Env
+      # FLASK_ENV: "development"
       FLASK_DEBUG: 1
 
       # OpenTelemetry and HoneyComb to monitor and track requests data
@@ -24,13 +25,14 @@ services:
       # OTEL_SERVICE_NAME: "backend-flask"
       
       # Amazon Cognito Env Variables
-      AWS_COGNITO_USER_POOL_ID: "${AWS_USER_POOLS_ID}"
-      AWS_COGNITO_USER_POOL_CLIENT_ID: "${AWS_USER_POOLS_CLIENT_ID}"    
+      AWS_USER_POOLS_ID: "${AWS_USER_POOLS_ID}"
+      AWS_USER_POOLS_CLIENT_ID: "${AWS_USER_POOLS_CLIENT_ID}"    
 
       # AWS Account Credentials
       AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
-      # AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
-      # AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+      AWS_ACCOUNT_ID: "${AWS_ACCOUNT_ID}"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
   
       # Rollbar ------
       # ROLLBAR_ACCESS_TOKEN: "${ROLLBAR_ACCESS_TOKEN}"
@@ -80,8 +82,9 @@ services:
     image: postgres:13-alpine
     restart: always
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: "cruddur"
     ports:
       - '5432:5432'
     volumes: 
@@ -98,3 +101,6 @@ networks:
 # communicate with each other, ensuring they stay on their private road and can't
 # randomly chat with other containers outside of this network. It's like giving
 # your applications their own little playground to play safely in
+volumes:
+  db:
+    driver: local
