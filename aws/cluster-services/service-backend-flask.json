@@ -12,19 +12,30 @@
         ],
         "subnets": [
             "${SUBNET_1}",
-            "${SUBNET_1}",
-            "${SUBNET_1}"
+            "${SUBNET_2}",
+            "${SUBNET_3}"
         ]
       }
     },
     "propagateTags": "SERVICE",
     "serviceName": "backend-flask",
     "taskDefinition": "backend-flask:4",
-    "services": [
+    "loadBalancers": [
       {
-        "portName": "backend-flask",
-        "discoveryName": "backend-flask",
-        "clientAliases": [{"port": 4567}]
+        "targetGroupArn": "arn:aws:elasticloadbalancing:ca-central-1:${AWS_ACCOUNT_ID}:targetgroup/cruddur-backend-flask-tg/8c5d9cd874805707",
+        "containerName": "backend-flask",
+        "containerPort": 4567
       }
-    ]
+    ],
+    "serviceConnectConfiguration": {
+    "enabled": true,
+    "namespace": "cruddur",
+    "services": [
+        {
+          "portName": "backend-flask",
+          "discoveryName": "backend-flask",
+          "clientAliases": [{"port": 4567}]
+        }
+      ]
+    }
 }
