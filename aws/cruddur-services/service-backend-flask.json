@@ -11,18 +11,18 @@
             "${SG}"
         ],
         "subnets": [
-            "${SUBNET_1}",
-            "${SUBNET_2}",
-            "${SUBNET_3}"
+          "${SUBNET_1}",
+          "${SUBNET_2}",
+          "${SUBNET_3}"
         ]
       }
     },
     "propagateTags": "SERVICE",
     "serviceName": "backend-flask",
-    "taskDefinition": "backend-flask:4",
+    "taskDefinition": "backend-flask:5",
     "loadBalancers": [
       {
-        "targetGroupArn": "arn:aws:elasticloadbalancing:ca-central-1:${AWS_ACCOUNT_ID}:targetgroup/cruddur-backend-flask-tg/8c5d9cd874805707",
+        "targetGroupArn": "arn:aws:elasticloadbalancing:ca-central-1:${ACCOUNT_ID}:targetgroup/cruddur-backend-flask-tg/8c5d9cd874805707",
         "containerName": "backend-flask",
         "containerPort": 4567
       }
